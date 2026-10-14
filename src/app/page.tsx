@@ -1,42 +1,57 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { absoluteUrl } from "@/lib/seo/site";
 import { getCurrentUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { POST_CARD_SELECT } from "@/lib/posts";
 import { GoogleSignInButton } from "@/components/google-sign-in-button";
 import { PostList, type PostCardData } from "@/components/post-card";
+import { PeopleList, type Person } from "@/components/social/people-list";
 
 const FEED_LIMIT = 30;
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+    types: { "application/rss+xml": absoluteUrl("/feed.xml") },
+  },
+};
+
+const PROFILE_FIELDS = "id, username, full_name, avatar_url";
+
+function asPeople(
+  rows: { person: Person | Person[] | null }[] | null,
+): Person[] {
+  return (rows ?? []).flatMap((row) => {
+    const person = Array.isArray(row.person) ? row.person[0] : row.person;
+    return person ? [person] : [];
+  });
+}
 
 async function Feed({ searchParams }: { searchParams: PageProps<"/">["searchParams"] }) {
   const { feed } = await searchParams;
   const user = await getCurrentUser();
   const supabase = await createClient();
-  const showFollowing = Boolean(user) && feed === "following";
+  const peopleFeed = feed === "followers" ? "followers" : feed === "following" ? "following" : null;
+  const showPeople = Boolean(user) && peopleFeed;
 
   let posts: PostCardData[] = [];
-  let empty = "아직 발행된 글이 없어요. 첫 글의 주인공이 되어 보세요.";
+  let people: Person[] = [];
+  const empty = "아직 발행된 글이 없어요. 첫 글의 주인공이 되어 보세요.";
 
-  if (showFollowing && user) {
-    const { data: follows } = await supabase
+  if (showPeople && user && peopleFeed) {
+    const following = peopleFeed === "following";
+    const { data } = await supabase
       .from("follows")
-      .select("following_id")
-      .eq("follower_id", user.id);
-    const ids = (follows ?? []).map((f) => f.following_id);
-    empty = ids.length
-      ? "팔로우한 사람들이 아직 글을 쓰지 않았어요."
-      : "아직 팔로우한 사람이 없어요. 마음에 드는 블로그를 팔로우해 보세요.";
-
-    if (ids.length) {
-      const { data } = await supabase
-        .from("posts")
-        .select(POST_CARD_SELECT)
-        .eq("status", "published")
-        .in("author_id", ids)
-        .order("published_at", { ascending: false })
-        .limit(FEED_LIMIT);
-      posts = (data ?? []) as PostCardData[];
-    }
+      .select(
+        following
+          ? `person:profiles!follows_following_id_fkey(${PROFILE_FIELDS})`
+          : `person:profiles!follows_follower_id_fkey(${PROFILE_FIELDS})`,
+      )
+      .eq(following ? "follower_id" : "following_id", user.id)
+      .order("created_at", { ascending: false });
+    people = asPeople(data as { person: Person | Person[] | null }[] | null);
   } else {
     const { data } = await supabase
       .from("posts")
@@ -68,18 +83,63 @@ async function Feed({ searchParams }: { searchParams: PageProps<"/">["searchPara
 
       <section className="flex flex-col">
         <nav className="flex gap-6 border-b border-black/5 dark:border-white/10">
-          <FeedTab href="/" active={!showFollowing}>
+          <FeedTab href="/" active={!showPeople}>
             최신 글
           </FeedTab>
           {user && (
-            <FeedTab href="/?feed=following" active={showFollowing}>
+            <FeedTab href="/?feed=following" active={Boolean(showPeople)}>
               팔로잉
             </FeedTab>
           )}
         </nav>
-        <PostList posts={posts} empty={empty} />
+        {showPeople && peopleFeed ? (
+          <>
+            <nav className="flex gap-2 py-4">
+              <PeopleTab href="/?feed=following" active={peopleFeed === "following"}>
+                팔로잉
+              </PeopleTab>
+              <PeopleTab href="/?feed=followers" active={peopleFeed === "followers"}>
+                팔로워
+              </PeopleTab>
+            </nav>
+            <PeopleList
+              people={people}
+              empty={
+                peopleFeed === "following"
+                  ? "아직 팔로우한 사람이 없어요."
+                  : "아직 팔로워가 없어요."
+              }
+            />
+          </>
+        ) : (
+          <PostList posts={posts} empty={empty} />
+        )}
       </section>
     </>
+  );
+}
+
+function PeopleTab({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`rounded-full px-3 py-1 text-sm font-medium ${
+        active
+          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+          : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+      }`}
+    >
+      {children}
+    </Link>
   );
 }
 

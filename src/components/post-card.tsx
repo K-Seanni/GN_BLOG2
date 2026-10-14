@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
+import { TagList } from "@/components/post/article-view";
 import { formatCount, formatDate } from "@/lib/format";
 import { postPath } from "@/lib/posts";
 
@@ -9,6 +10,8 @@ export type PostCardData = {
   title: string;
   slug: string;
   excerpt: string | null;
+  summary: string | null;
+  tags: string[];
   cover_image_url: string | null;
   status: string;
   published_at: string | null;
@@ -49,11 +52,12 @@ export function PostCard({ post, showAuthor = true, editable = false }: Props) {
             )}
             <span className="truncate">{post.title}</span>
           </h2>
-          {post.excerpt && (
-            <p className="line-clamp-2 text-zinc-600 dark:text-zinc-400">{post.excerpt}</p>
+          {(post.summary || post.excerpt) && (
+            <p className="line-clamp-2 text-zinc-600 dark:text-zinc-400">{post.summary || post.excerpt}</p>
           )}
         </Link>
-        <div className="flex items-center gap-3 text-xs text-zinc-500">
+        {post.tags.length > 0 && <TagList tags={post.tags} size="sm" />}
+        <div className="flex items-center gap-3 font-mono text-xs text-zinc-500">
           <span>{formatDate(isDraft ? post.updated_at : post.published_at)}</span>
           {!isDraft && (
             <>

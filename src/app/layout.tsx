@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
+import { JsonLd, siteSchemas } from "@/lib/seo/json-ld";
+import { absoluteUrl, SITE_DESCRIPTION, SITE_LOCALE, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/seo/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,33 +15,38 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : "http://localhost:3000";
-
-const description =
-  "코드처럼 정확하게, 글처럼 자유롭게. 개발자와 메이커를 위한 미니멀 블로그 플랫폼. Google 계정으로 3초 만에 시작하세요.";
+const verificationOther: Record<string, string> = {};
+if (process.env.NAVER_SITE_VERIFICATION) {
+  verificationOther["naver-site-verification"] = process.env.NAVER_SITE_VERIFICATION;
+}
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "GN Blog — 생각을 기록하고, 함께 나누는 공간",
-    template: "%s | GN Blog",
+    default: SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
-  description,
-  applicationName: "GN Blog",
-  keywords: ["블로그", "개발자 블로그", "기술 블로그", "글쓰기", "GN Blog"],
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: ["블로그", "개발자 블로그", "기술 블로그", "글쓰기", SITE_NAME],
+  alternates: {
+    types: { "application/rss+xml": absoluteUrl("/feed.xml") },
+  },
   openGraph: {
     type: "website",
-    siteName: "GN Blog",
-    locale: "ko_KR",
-    title: "GN Blog — 생각을 기록하고, 함께 나누는 공간",
-    description,
+    siteName: SITE_NAME,
+    locale: SITE_LOCALE,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "GN Blog — 생각을 기록하고, 함께 나누는 공간",
-    description,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: verificationOther,
   },
 };
 
@@ -50,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-zinc-50 font-sans dark:bg-black">
+        <JsonLd data={siteSchemas()} />
         <SiteHeader />
         {children}
       </body>

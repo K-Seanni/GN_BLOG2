@@ -161,6 +161,7 @@ export type Database = {
       posts: {
         Row: {
           author_id: string
+          canonical_url: string | null
           comment_count: number
           content: Json
           cover_image_url: string | null
@@ -168,15 +169,23 @@ export type Database = {
           excerpt: string | null
           id: string
           like_count: number
+          noindex: boolean
+          og_image_url: string | null
           published_at: string | null
+          reading_minutes: number
+          seo_description: string | null
+          seo_title: string | null
           slug: string
           status: string
+          summary: string | null
+          tags: string[]
           title: string
           updated_at: string
           view_count: number
         }
         Insert: {
           author_id: string
+          canonical_url?: string | null
           comment_count?: number
           content?: Json
           cover_image_url?: string | null
@@ -184,15 +193,23 @@ export type Database = {
           excerpt?: string | null
           id?: string
           like_count?: number
+          noindex?: boolean
+          og_image_url?: string | null
           published_at?: string | null
+          reading_minutes?: number
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
           status?: string
+          summary?: string | null
+          tags?: string[]
           title: string
           updated_at?: string
           view_count?: number
         }
         Update: {
           author_id?: string
+          canonical_url?: string | null
           comment_count?: number
           content?: Json
           cover_image_url?: string | null
@@ -200,9 +217,16 @@ export type Database = {
           excerpt?: string | null
           id?: string
           like_count?: number
+          noindex?: boolean
+          og_image_url?: string | null
           published_at?: string | null
+          reading_minutes?: number
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
           status?: string
+          summary?: string | null
+          tags?: string[]
           title?: string
           updated_at?: string
           view_count?: number
@@ -224,8 +248,10 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          social_links: string[]
           updated_at: string
           username: string | null
+          website_url: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -233,8 +259,10 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id: string
+          social_links?: string[]
           updated_at?: string
           username?: string | null
+          website_url?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -242,8 +270,10 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          social_links?: string[]
           updated_at?: string
           username?: string | null
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -252,6 +282,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      popular_tags: {
+        Args: { max_count?: number }
+        Returns: {
+          post_count: number
+          tag: string
+        }[]
+      }
       record_post_view: {
         Args: { p_anon_key: string; p_post_id: string }
         Returns: undefined

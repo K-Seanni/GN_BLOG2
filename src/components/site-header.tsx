@@ -26,6 +26,12 @@ async function UserMenu() {
           <Link href={`/@${username}`} aria-label="내 블로그">
             <Avatar src={user.profile?.avatar_url} name={name} />
           </Link>
+          <Link
+            href="/settings/profile"
+            className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+          >
+            설정
+          </Link>
         </>
       ) : (
         <Link href="/onboarding" className="text-sm font-medium underline underline-offset-4">
@@ -48,14 +54,22 @@ export function SiteHeader() {
   return (
     <header className="border-b border-black/5 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-black/80">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-6">
-        <Link
-          href="/"
-          aria-label="GN Blog 홈"
-          className="flex items-center gap-2 font-mono text-lg font-bold tracking-tight"
-        >
-          <span aria-hidden className="h-2.5 w-2.5 bg-foreground" />
-          gn/blog
-        </Link>
+        <nav aria-label="주요 메뉴" className="flex items-center gap-6">
+          <Link
+            href="/"
+            aria-label="GN Blog 홈"
+            className="flex items-center gap-2 font-mono text-lg font-bold tracking-tight"
+          >
+            <span aria-hidden className="h-2.5 w-2.5 bg-foreground" />
+            gn/blog
+          </Link>
+          <Link
+            href="/tags"
+            className="font-mono text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+          >
+            tags
+          </Link>
+        </nav>
         <Suspense fallback={<div className="h-9" />}>
           <UserMenu />
         </Suspense>

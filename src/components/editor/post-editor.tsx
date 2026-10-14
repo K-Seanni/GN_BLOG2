@@ -24,7 +24,7 @@ export function PostEditor({ userId, initialContent, onChange }: Props) {
     for (const file of files) {
       try {
         const src = await uploadImage(file, userId);
-        const node = view.state.schema.nodes.image.create({ src, alt: file.name });
+        const node = view.state.schema.nodes.image.create({ src, alt: "" });
         const tr =
           pos === undefined
             ? view.state.tr.replaceSelectionWith(node)
@@ -118,8 +118,19 @@ function Toolbar({
       blockquote: editor.isActive("blockquote"),
       codeBlock: editor.isActive("codeBlock"),
       link: editor.isActive("link"),
+      image: editor.isActive("image"),
+      imageAlt: String(editor.getAttributes("image").alt ?? ""),
     }),
   });
+
+  function setImageAlt() {
+    const alt = window.prompt(
+      "이미지를 설명하는 대체 텍스트를 입력하세요 (검색엔진과 화면 낭독기가 읽어요)",
+      state.imageAlt,
+    );
+    if (alt === null) return;
+    editor.chain().focus().updateAttributes("image", { alt: alt.trim() }).run();
+  }
 
   function setLink() {
     const previous = editor.getAttributes("link").href as string | undefined;
@@ -135,7 +146,7 @@ function Toolbar({
   const chain = () => editor.chain().focus();
 
   return (
-    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b border-black/10 bg-zinc-50/95 py-2 backdrop-blur dark:border-white/10 dark:bg-black/95">
+    <div className="sticky top-16 z-10 flex flex-wrap items-center gap-1 border-b border-black/10 bg-zinc-50/95 py-2 backdrop-blur dark:border-white/10 dark:bg-black/95">
       <ToolButton label="제목 2" active={state.h2} onClick={() => chain().toggleHeading({ level: 2 }).run()}>
         H2
       </ToolButton>
@@ -172,6 +183,11 @@ function Toolbar({
       <ToolButton label="이미지" active={false} onClick={() => fileInput.current?.click()}>
         이미지
       </ToolButton>
+      {state.image && (
+        <ToolButton label="대체 텍스트" active={Boolean(state.imageAlt)} onClick={setImageAlt}>
+          {state.imageAlt ? "대체 텍스트 ✓" : "대체 텍스트 추가"}
+        </ToolButton>
+      )}
       <input
         ref={fileInput}
         type="file"

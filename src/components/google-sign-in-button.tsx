@@ -1,7 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { signInWithGoogle } from "@/app/auth/actions";
+
+const IN_APP_BROWSER = /KAKAOTALK|Instagram|FBAN|FBAV|Line\/|NAVER\(inapp|MicroMessenger/i;
+
+function isInAppBrowser() {
+  return typeof navigator !== "undefined" && IN_APP_BROWSER.test(navigator.userAgent);
+}
 
 function SubmitButton({ compact }: { compact: boolean }) {
   const { pending } = useFormStatus();
@@ -38,9 +45,27 @@ function SubmitButton({ compact }: { compact: boolean }) {
 }
 
 export function GoogleSignInButton({ compact = false }: { compact?: boolean }) {
+  const [blocked, setBlocked] = useState(false);
+
   return (
-    <form action={signInWithGoogle}>
-      <SubmitButton compact={compact} />
-    </form>
+    <div className="flex flex-col items-center gap-3">
+      <form
+        action={signInWithGoogle}
+        onSubmit={(event) => {
+          if (isInAppBrowser()) {
+            event.preventDefault();
+            setBlocked(true);
+          }
+        }}
+      >
+        <SubmitButton compact={compact} />
+      </form>
+      {blocked && (
+        <p role="alert" className="max-w-xs text-center text-sm leading-6 text-amber-700 dark:text-amber-400">
+          카카오톡 안에서는 Google 로그인이 막혀 있어요. 오른쪽 위 메뉴에서 &quot;다른
+          브라우저로 열기&quot;를 눌러 Safari나 Chrome으로 연 다음 로그인해 주세요.
+        </p>
+      )}
+    </div>
   );
 }
