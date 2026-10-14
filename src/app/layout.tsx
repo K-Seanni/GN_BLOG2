@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ChatWidget } from "@/components/chat/chat-widget";
 import { SiteHeader } from "@/components/site-header";
 import { JsonLd, siteSchemas } from "@/lib/seo/json-ld";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_LOCALE, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/seo/site";
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <JsonLd data={siteSchemas()} />
         <SiteHeader />
         {children}
+        <ChatWidget />
       </body>
     </html>
   );
