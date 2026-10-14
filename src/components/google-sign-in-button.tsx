@@ -3,16 +3,18 @@
 import { useFormStatus } from "react-dom";
 import { signInWithGoogle } from "@/app/auth/actions";
 
-function SubmitButton() {
+function SubmitButton({ compact }: { compact: boolean }) {
   const { pending } = useFormStatus();
+  const size = compact ? "h-9 gap-2 px-4 text-sm" : "h-12 gap-3 px-6";
+  const label = compact ? "로그인" : "Google로 시작하기";
 
   return (
     <button
       type="submit"
       disabled={pending}
-      className="flex h-12 items-center justify-center gap-3 rounded-full border border-black/10 bg-white px-6 font-medium text-zinc-900 shadow-sm transition-colors hover:bg-zinc-50 disabled:opacity-60 dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800"
+      className={`flex items-center justify-center rounded-full border border-black/10 bg-white font-medium text-zinc-900 shadow-sm transition-colors hover:bg-zinc-50 disabled:opacity-60 dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800 ${size}`}
     >
-      <svg aria-hidden viewBox="0 0 48 48" className="h-5 w-5">
+      <svg aria-hidden viewBox="0 0 48 48" className={compact ? "h-4 w-4" : "h-5 w-5"}>
         <path
           fill="#FFC107"
           d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"
@@ -30,15 +32,15 @@ function SubmitButton() {
           d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"
         />
       </svg>
-      {pending ? "Google로 이동 중..." : "Google로 시작하기"}
+      {pending ? "이동 중..." : label}
     </button>
   );
 }
 
-export function GoogleSignInButton() {
+export function GoogleSignInButton({ compact = false }: { compact?: boolean }) {
   return (
     <form action={signInWithGoogle}>
-      <SubmitButton />
+      <SubmitButton compact={compact} />
     </form>
   );
 }

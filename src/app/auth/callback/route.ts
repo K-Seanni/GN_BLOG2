@@ -7,8 +7,18 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL("/", origin));
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!error) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", data.user.id)
+        .single();
+
+      const destination = profile?.username ? "/" : "/onboarding";
+      return NextResponse.redirect(new URL(destination, origin));
+    }
   }
 
   return NextResponse.redirect(new URL("/auth/error", origin));

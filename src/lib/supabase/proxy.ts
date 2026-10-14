@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+export const VIEWER_COOKIE = "vid";
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -27,6 +29,16 @@ export async function updateSession(request: NextRequest) {
 
   // Must run between client creation and returning the response, or sessions expire randomly.
   await supabase.auth.getClaims();
+
+  if (!request.cookies.has(VIEWER_COOKIE)) {
+    response.cookies.set(VIEWER_COOKIE, crypto.randomUUID(), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 365,
+      path: "/",
+    });
+  }
 
   return response;
 }
