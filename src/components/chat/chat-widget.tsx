@@ -1,35 +1,19 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
-
-type Message = { role: "user" | "model"; text: string };
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { RichText } from "./rich-text";
+import { MAX_LENGTH, useChatStream } from "./use-chat-stream";
 
 const SUGGESTIONS = ["글은 어떻게 쓰나요?", "팔로우는 어디서 하나요?", "로그인이 안 돼요"];
-const MAX_LENGTH = 500;
-
-function RichText({ text }: { text: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return (
-    <>
-      {parts.map((part, i) =>
-        part.startsWith("**") && part.endsWith("**") && part.length > 4 ? (
-          <strong key={i}>{part.slice(2, -2)}</strong>
-        ) : (
-          <Fragment key={i}>{part}</Fragment>
-        ),
-      )}
-    </>
-  );
-}
 
 export function ChatWidget() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [pending, setPending] = useState(false);
+  const { messages, pending, send: sendMessage, reset: resetChat } = useChatStream("/api/chat");
   const scroller = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const abort = useRef<AbortController | null>(null);
 
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight });
@@ -48,62 +32,19 @@ export function ChatWidget() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  async function send(raw: string) {
-    const text = raw.trim().slice(0, MAX_LENGTH);
-    if (!text || pending) return;
-
-    const history: Message[] = [...messages, { role: "user", text }];
-    setMessages([...history, { role: "model", text: "" }]);
+  function send(raw: string) {
+    if (!raw.trim() || pending) return;
     setInput("");
-    setPending(true);
-
-    const controller = new AbortController();
-    abort.current = controller;
-
-    const write = (answer: string) =>
-      setMessages([...history, { role: "model", text: answer }]);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok || !response.body) {
-        write(
-          (await response.text().catch(() => "")) || "지금은 답변을 만들 수 없어요. 잠시 후 다시 시도해 주세요.",
-        );
-        return;
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let answer = "";
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        answer += decoder.decode(value, { stream: true });
-        write(answer);
-      }
-      if (!answer.trim()) write("답변을 받지 못했어요. 다시 질문해 주세요.");
-    } catch (error) {
-      if ((error as Error).name !== "AbortError") {
-        write("네트워크 문제로 답변을 받지 못했어요. 다시 시도해 주세요.");
-      }
-    } finally {
-      setPending(false);
-      abort.current = null;
-    }
+    void sendMessage(raw);
   }
 
   function reset() {
-    abort.current?.abort();
-    setMessages([]);
+    resetChat();
     setInput("");
-    setPending(false);
   }
+
+  // The Catan page has its own full-size chat, so the floating guide stays out of its way.
+  if (pathname.startsWith("/catan")) return null;
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">

@@ -69,6 +69,12 @@ export function SiteHeader() {
           >
             tags
           </Link>
+          <Link
+            href="/catan"
+            className="font-mono text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+          >
+            catan
+          </Link>
         </nav>
         <Suspense fallback={<div className="h-9" />}>
           <UserMenu />
