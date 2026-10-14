@@ -36,7 +36,7 @@ export function AuthorLinks({ author }: { author: Pick<PublicAuthor, "website_ur
 }
 
 export function AuthorBox({ author, followSlot }: { author: PublicAuthor; followSlot?: ReactNode }) {
-  const name = author.full_name ?? author.username;
+  const nickname = `@${author.username}`;
 
   return (
     <section
@@ -44,15 +44,12 @@ export function AuthorBox({ author, followSlot }: { author: PublicAuthor; follow
       className="flex flex-col gap-4 rounded-xl border border-black/10 bg-white/70 p-6 sm:flex-row sm:items-start dark:border-white/10 dark:bg-zinc-900/60"
     >
       <Link href={`/@${author.username}`} className="shrink-0">
-        <Avatar src={author.avatar_url} name={name} size={56} />
+        <Avatar src={author.avatar_url} name={nickname} size={56} />
       </Link>
       <div className="flex flex-1 flex-col gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href={`/@${author.username}`} className="font-semibold hover:underline">
-            {name}
-          </Link>
-          <span className="font-mono text-xs text-zinc-500">@{author.username}</span>
-        </div>
+        <Link href={`/@${author.username}`} className="font-semibold hover:underline">
+          {nickname}
+        </Link>
         {author.bio && <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">{author.bio}</p>}
         <AuthorLinks author={author} />
       </div>

@@ -79,19 +79,19 @@ export async function CommentSection({ postId, postAuthorId, viewerId, canCommen
 
 function CommentItem({ comment, deletable }: { comment: CommentRow; deletable: boolean }) {
   const username = comment.author?.username;
-  const name = comment.author?.full_name ?? username ?? "알 수 없음";
+  const nickname = username ? `@${username}` : "알 수 없음";
 
   return (
     <div className="flex gap-3">
-      <Avatar src={comment.author?.avatar_url} name={name} size={28} />
+      <Avatar src={comment.author?.avatar_url} name={nickname} size={28} />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-center gap-2 text-sm">
           {username ? (
             <Link href={`/@${username}`} className="font-medium hover:underline">
-              {name}
+              {nickname}
             </Link>
           ) : (
-            <span className="font-medium">{name}</span>
+            <span className="font-medium">{nickname}</span>
           )}
           <span className="text-xs text-zinc-500">{formatDateTime(comment.created_at)}</span>
           {deletable && (

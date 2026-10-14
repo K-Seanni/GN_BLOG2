@@ -29,7 +29,7 @@ type Props = {
 const EDIT_THRESHOLD_MS = 10 * 60 * 1000;
 
 export function ArticleView({ post, draft = false, headerActions, liveStats }: Props) {
-  const authorName = post.author.full_name ?? post.author.username;
+  const nickname = `@${post.author.username}`;
   const wasUpdated =
     post.published_at !== null &&
     new Date(post.updated_at).getTime() - new Date(post.published_at).getTime() > EDIT_THRESHOLD_MS;
@@ -65,8 +65,8 @@ export function ArticleView({ post, draft = false, headerActions, liveStats }: P
         <h1 className="text-4xl font-semibold leading-tight tracking-tight">{post.title}</h1>
         <div className="flex flex-wrap items-center gap-3">
           <Link href={`/@${post.author.username}`} className="flex items-center gap-3">
-            <Avatar src={post.author.avatar_url} name={authorName} size={40} />
-            <span className="font-medium hover:underline">{authorName}</span>
+            <Avatar src={post.author.avatar_url} name={nickname} size={40} />
+            <span className="font-medium hover:underline">{nickname}</span>
           </Link>
           <span className="flex flex-wrap items-center gap-x-2 font-mono text-xs text-zinc-500">
             {post.published_at && (

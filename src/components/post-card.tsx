@@ -30,7 +30,7 @@ type Props = {
 
 export function PostCard({ post, showAuthor = true, editable = false }: Props) {
   const username = post.author?.username;
-  const authorName = post.author?.full_name ?? username ?? "";
+  const nickname = username ? `@${username}` : "";
   const isDraft = post.status !== "published";
   const href = isDraft || !username ? `/edit/${post.id}` : postPath(username, post.slug);
 
@@ -39,8 +39,8 @@ export function PostCard({ post, showAuthor = true, editable = false }: Props) {
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         {showAuthor && username && (
           <Link href={`/@${username}`} className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-            <Avatar src={post.author?.avatar_url} name={authorName} size={22} />
-            {authorName}
+            <Avatar src={post.author?.avatar_url} name={nickname} size={22} />
+            {nickname}
           </Link>
         )}
         <Link href={href} className="group flex flex-col gap-1">

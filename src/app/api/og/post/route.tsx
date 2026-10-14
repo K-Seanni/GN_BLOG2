@@ -31,10 +31,9 @@ export async function GET(request: NextRequest) {
   const post = username && slug ? await getPublishedPost(username, slug) : null;
 
   const title = post?.title ?? "GN Blog";
-  const author = post ? (post.author.full_name ?? post.author.username) : "";
   const handle = post ? `@${post.author.username}` : "";
   const tags = (post?.tags ?? []).slice(0, 3).map((t) => `#${t}`).join("  ");
-  const font = await loadKoreanFont(`gn/blog${title}${author}${handle}${tags}분 읽기0123456789`);
+  const font = await loadKoreanFont(`gn/blog${title}${handle}${tags}분 읽기0123456789`);
 
   return new ImageResponse(
     (
@@ -72,7 +71,7 @@ export async function GET(request: NextRequest) {
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 28, color: "#52525b" }}>
-          <span>{post ? `${author} ${handle}${post ? ` · ${post.reading_minutes}분 읽기` : ""}` : ""}</span>
+          <span>{post ? `${handle} · ${post.reading_minutes}분 읽기` : ""}</span>
           <span>{tags}</span>
         </div>
       </div>
